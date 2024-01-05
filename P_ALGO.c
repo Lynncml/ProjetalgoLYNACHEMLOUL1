@@ -10,32 +10,60 @@ struct Node {
 struct Node *createNode(int data);
 void insertNode(struct Node **headRef, int data);
 void displayList(struct Node *head);
+struct Node *searchNode(struct Node *head, int data);
+void deleteNode(struct Node **headRef, int data);
+
+// Déclaration des dimensions des boutons globalement
+const int buttonWidth = 220;
+const int buttonHeight = 40;
 
 int main() {
     const int screenWidth = 800;
     const int screenHeight = 450;
-    const int buttonWidth = 130;
-    const int buttonHeight = 40;
 
     InitWindow(screenWidth, screenHeight, "Linked List Visualization with Buttons");
     SetTargetFPS(60);
 
     struct Node *head = NULL;
-Rectangle buttonAddRect = {(screenWidth - buttonWidth) / 2, 10, buttonWidth, buttonHeight};
-    
+
+    // Déclaration des rectangles pour les boutons
+    Rectangle buttonAddRect = {(screenWidth - buttonWidth) / 2, 10, buttonWidth, buttonHeight};
+    Rectangle buttonSearchRect = {(screenWidth - buttonWidth) / 2, 60, buttonWidth, buttonHeight};
+    Rectangle buttonDeleteRect = {(screenWidth - buttonWidth) / 2, 110, buttonWidth, buttonHeight};
 
     while (!WindowShouldClose()) {
         // Update
 
-        // Check for button click to add a new element
+        // Vérifiez le clic sur le bouton pour ajouter un nouvel élément
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Vector2 mousePoint = GetMousePosition();
 
-            // Add Element button
+            // Bouton "Ajouter Élément"
             if (CheckCollisionPointRec(mousePoint, buttonAddRect)) {
-                // Add a random element to the list
+                // Ajouter un élément aléatoire à la liste
                 insertNode(&head, GetRandomValue(1, 100));
                 printf("Node added\n");
+            }
+
+            // Bouton "Rechercher Élément"
+            else if (CheckCollisionPointRec(mousePoint, buttonSearchRect)) {
+                // Valeur spécifique pour les tests (changez cette valeur au besoin)
+                int valueToSearch = 1;
+                struct Node *result = searchNode(head, valueToSearch);
+
+                if (result != NULL) {
+                    printf("Node found: %d\n", result->data);
+                } else {
+                    printf("Node not found\n");
+                }
+            }
+
+            // Bouton "Supprimer Élément"
+            else if (CheckCollisionPointRec(mousePoint, buttonDeleteRect)) {
+                // Valeur spécifique pour les tests (changez cette valeur au besoin)
+                int valueToDelete = 0;
+                deleteNode(&head, valueToDelete);
+                printf("Node deleted\n");
             }
         }
 
@@ -43,12 +71,18 @@ Rectangle buttonAddRect = {(screenWidth - buttonWidth) / 2, 10, buttonWidth, but
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        // Display the linked list with arrows
+        // Afficher la liste liée avec les flèches
         displayList(head);
 
-        // Draw Add Element button
+        // Dessiner les boutons
         DrawRectangleRec(buttonAddRect, BLUE);
-        DrawText("Add Element", buttonAddRect.x + 10, buttonAddRect.y + 10, 20, WHITE);
+        DrawText("Ajouter Élément", buttonAddRect.x + 10, buttonAddRect.y + 10, 20, WHITE);
+
+        DrawRectangleRec(buttonSearchRect, BLUE);
+        DrawText("Rechercher Élément", buttonSearchRect.x + 10, buttonSearchRect.y + 10, 20, WHITE);
+
+        DrawRectangleRec(buttonDeleteRect, BLUE);
+        DrawText("Supprimer Élément", buttonDeleteRect.x + 10, buttonDeleteRect.y + 10, 20, WHITE);
 
         EndDrawing();
     }
@@ -112,5 +146,37 @@ void displayList(struct Node *head) {
 
         xPos += (nodeSize + arrowSize);
         current = current->next;
+    }
+}
+
+// Function to search for a node with given data in the linked list
+struct Node *searchNode(struct Node *head, int data) {
+    struct Node *current = head;
+
+    while (current != NULL && current->data != data) {
+        current = current->next;
+    }
+
+    return current;
+}
+
+// Function to delete a node with given data from the linked list
+void deleteNode(struct Node **headRef, int data) {
+    struct Node *current = *headRef;
+    struct Node *prev = NULL;
+
+    while (current != NULL && current->data != data) {
+        prev = current;
+        current = current->next;
+    }
+
+    if (current != NULL) {
+        if (prev == NULL) {
+            *headRef = current->next;
+        } else {
+            prev->next = current->next;
+        }
+
+        free(current);
     }
 }
